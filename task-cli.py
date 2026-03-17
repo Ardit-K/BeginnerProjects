@@ -5,44 +5,88 @@ ID = 0
 
 class task:
   def __init__( self, description ):
+    global ID
     self.id = ID
     self.description = description
     self.status = "todo"
-    self.createdAt = datetime.datetime.now()
-    self.updatedAt = datetime.datetime.now()
-
+    self.createdAt = datetime.datetime.now().isoformat()
+    self.updatedAt = datetime.datetime.now().isoformat()
 
 def addTask(description):
+  global ID
   newTask = task(description)
+  try:
+    with open('tasks.json', 'r') as json_file:
+      data = json.load(json_file)
+  except (FileNotFoundError, json.decoder.JSONDecodeError):
+    # If the file doesn't exist or is empty, start a new empty list
+    data = []
+  data.append(newTask.__dict__)
   with open('tasks.json', 'w') as json_file:
-    json.dump(newTask.__dict__, json_file, indent=4)
+    json.dump(data, json_file, indent=4)
   print(f'Task added successfully (id: {newTask.id})')
   ID = ID + 1
 
 def updateTask(id, description):
-  pass
+  try:
+    with open('tasks.json', 'r') as json_file:
+      data = json.load(json_file)
+      for task in data:
+        if (task['id'] == int(id)):
+          task['description'] = description
+          task['updatedAt'] = datetime.datetime.now().isoformat()
+    with open('tasks.json', 'w') as json_file:
+      json.dump(data, json_file, indent=4)
+  except json.decoder.JSONDecodeError:
+    print('No matching task found.')
+    return
 
 def deleteTask(id):
-  pass
+  try:
+    with open('tasks.json', 'r') as json_file:
+      data = json.load(json_file)
+      for task in data:
+        if (task['id'] == int(id)):
+          data.remove(task)
+          print(f'Task {id} deleted successfully.')
+          break
+    with open('tasks.json', 'w') as json_file:
+      json.dump(data, json_file, indent=4)
+  except json.decoder.JSONDecodeError:
+    print('No tasks found.')
+    return
 
 def listTasks(status):
-  with open('tasks.json', 'r') as json_file:
-    data = json.load(json_file)
-    if status == '':
-      print(data)
-    else:
+  try:
+    with open('tasks.json', 'r') as json_file:
+      data = json.load(json_file)
       for task in data:
         if (status == '' or task['status'] == status):
           print(f"ID: {task['id']}, Description: {task['description']}, Status: {task['status']}, Created At: {task['createdAt']}, Updated At: {task['updatedAt']}")
+  except json.decoder.JSONDecodeError:
+    print('No tasks found.')
+    return
 
 def markTask(id, status):
-  with open('tasks.json', 'w') as json_file:
-    data = json.load(json_file)
-    for task in data:
-      if (task['id'] == id):
-        task['status'] = status
-        task['updatedAt'] = datetime.datetime.now()
-    json.dump(data, json_file, indent=4)
+  try:
+    with open('tasks.json', 'r') as json_file:
+      data = json.load(json_file)
+      found = False
+      for task in data:
+        if (task['id'] == int(id)):
+          task['status'] = status
+          task['updatedAt'] = datetime.datetime.now().isoformat()
+          found = True
+          break
+      if not found:
+        print('No matching task found.')
+        return
+    with open('tasks.json', 'w') as json_file:
+      json.dump(data, json_file, indent=4) 
+      print(f'Task {id} marked as {status}.')
+  except json.decoder.JSONDecodeError:
+    print('No matching task found.')
+    return
 
 
 while(True):
