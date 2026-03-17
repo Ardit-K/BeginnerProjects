@@ -91,7 +91,7 @@ def markTask(id, status):
 
 while(True):
   print('Welcome to the task manager!')
-  userinput = input('What would you like to do? (add, list, update, delete, exit) ')
+  userinput = input('What would you like to do? (add, list, update, delete, mark-in-progress, mark-done, exit) ')
   inputs = userinput.split(' ')
   if inputs[0] == 'add':
     if (len(inputs) < 2):
